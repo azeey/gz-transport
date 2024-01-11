@@ -15,15 +15,52 @@
  *
 */
 
+#include <chrono>
 #include <iostream>
 #include <gz/msgs.hh>
 #include <gz/transport.hh>
 
 //////////////////////////////////////////////////
+/// \brief Provide an "echo" service.
+bool srvEcho(const gz::msgs::StringMsg &_req,
+  gz::msgs::StringMsg &_rep)
+{
+  // Set the response's content.
+  _rep.set_data(_req.data());
+
+  // The response succeed.
+  return true;
+}
+
+class Responder {
+public:
+  Responder() {
+    // Request the "/echo" service.
+    std::string service = "/echo";
+
+    // Advertise a service.
+    if (!this->node.Advertise(service, srvEcho)) {
+      std::cerr << "Error advertising service [" << service << "]" << std::endl;
+    }
+  }
+
+private:
+  gz::transport::Node node;
+};
+
+void runResponder()
+{
+  using namespace std::literals;
+  std::this_thread::sleep_for(2s);
+  std::cout << "Responder started" << std::endl;
+  Responder responder;
+  std::this_thread::sleep_for(10s);
+  std::cout << "Responder finished" << std::endl;
+}
+
+//////////////////////////////////////////////////
 int main(int argc, char **argv)
 {
-  // Create a transport node.
-  gz::transport::Node node;
 
   // Prepare the input parameters.
   gz::msgs::StringMsg req;
@@ -33,7 +70,10 @@ int main(int argc, char **argv)
   bool result;
   unsigned int timeout = 5000;
 
-  // Request the "/echo" service.
+  auto th = std::thread(runResponder);
+
+  // Create a transport node.
+  gz::transport::Node node;
   bool executed = node.Request("/echo", req, timeout, rep, result);
 
   if (executed)
@@ -45,4 +85,6 @@ int main(int argc, char **argv)
   }
   else
     std::cerr << "Service call timed out" << std::endl;
+
+  th.join();
 }
