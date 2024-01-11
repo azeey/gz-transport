@@ -32,28 +32,16 @@ bool srvEcho(const gz::msgs::StringMsg &_req,
   return true;
 }
 
-class Responder {
-public:
-  Responder() {
-    // Request the "/echo" service.
-    std::string service = "/echo";
-
-    // Advertise a service.
-    if (!this->node.Advertise(service, srvEcho)) {
-      std::cerr << "Error advertising service [" << service << "]" << std::endl;
-    }
-  }
-
-private:
-  gz::transport::Node node;
-};
-
 void runResponder()
 {
   using namespace std::literals;
   std::this_thread::sleep_for(2s);
+  gz::transport::Node node;
+  if (!node.Advertise("/echo", srvEcho))
+  {
+    std::cerr << "Error advertising service" << std::endl;
+  }
   std::cout << "Responder started" << std::endl;
-  Responder responder;
   std::this_thread::sleep_for(10s);
   std::cout << "Responder finished" << std::endl;
 }
