@@ -10,3 +10,18 @@ build --strip=never
 build --strict_system_includes
 build --fission=dbg
 build --features=per_object_debug_info
+
+build:asan --strip=never
+build:asan --copt -fsanitize=address
+build:asan --copt -O1
+build:asan --copt -g
+build:asan --copt -fno-omit-frame-pointer
+build:asan --linkopt -fsanitize=address
+
+
+build:tsan --strip=never
+build:tsan --copt -fsanitize=thread
+build:tsan --copt -O1
+build:tsan --copt -g
+build:tsan --copt -fno-omit-frame-pointer
+build:tsan --linkopt -fsanitize=thread
